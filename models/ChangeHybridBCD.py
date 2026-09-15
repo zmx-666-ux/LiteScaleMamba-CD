@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from vendor.vmamba import LayerNorm2d
+from models.vmamba import LayerNorm2d
 from models.Hybrid_backbone import HybridEncoder
 from models.Hybrid_decoder import ChangeDecoder_Hybrid
 

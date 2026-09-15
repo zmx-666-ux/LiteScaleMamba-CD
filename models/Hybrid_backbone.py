@@ -2,7 +2,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from vendor.vmamba import VSSBlock, LayerNorm2d, Permute
+from models.vmamba import VSSBlock, LayerNorm2d, Permute
 
 class ConvBNReLU(nn.Sequential):
 

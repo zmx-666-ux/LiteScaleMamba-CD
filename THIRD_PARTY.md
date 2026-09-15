@@ -1,9 +1,51 @@
-# Third-party components
+# Third-party notices
 
-The model structure and CUDA extension build source are derived from [MambaCD/ChangeMamba](https://github.com/ChenHongruixuan/ChangeMamba), which distributes Apache-2.0-licensed code. The selective scan extension in `third_party/selective_scan/` also descends from [Mamba](https://github.com/state-spaces/mamba), which uses Apache-2.0. The Apache-2.0 license text is supplied in `LICENSE`.
+The VSS block in `models/vmamba.py` and its cross-scan helper in `models/csm_triton.py` are derived from [VMamba](https://github.com/MzeroMiko/VMamba).
 
-The VSS block implementation in `vendor/` descends from [VMamba](https://github.com/MzeroMiko/VMamba), licensed under MIT. Its permission notice is supplied in `third_party/VMAMBA_LICENSE`.
+MIT License
 
-The `utils/lovasz.py` loss is adapted from [Maxim Berman's LovaszSoftmax implementation](https://github.com/bermanmaxim/LovaszSoftmax), licensed under MIT. Its permission notice is supplied in `third_party/LOVASZ_LICENSE`.
+Copyright (c) 2024 MzeroMiko
 
-The figures and reported scores are supplied with the anonymous manuscript materials. Dataset images are not redistributed here; obtain them from their respective maintainers.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The Lovasz-Softmax functions included in `train.py` are adapted from [LovaszSoftmax](https://github.com/bermanmaxim/LovaszSoftmax).
+
+MIT License
+
+Copyright (c) 2018 Maxim Berman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The remaining MambaCD/ChangeMamba-derived model code is covered by the Apache-2.0 license in `LICENSE`. The selective-scan extension is installed from its [upstream source](https://github.com/ChenHongruixuan/ChangeMamba) and is not redistributed in this repository.

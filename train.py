@@ -6,8 +6,110 @@ from pathlib import Path
 
 import numpy as np
 
-from utils.metrics import BinaryMetrics
-from utils.model import DEFAULT_CONFIG
+import yaml
+
+
+class BinaryMetrics:
+    def __init__(self):
+        self.confusion = np.zeros((2, 2), dtype=np.int64)
+
+    def reset(self):
+        self.confusion.fill(0)
+
+    def update(self, labels, predictions):
+        labels = np.asarray(labels)
+        predictions = np.asarray(predictions)
+        if labels.shape != predictions.shape:
+            raise ValueError("Labels and predictions must have the same shape")
+        valid = (labels == 0) | (labels == 1)
+        selected = predictions[valid]
+        if np.any((selected != 0) & (selected != 1)):
+            raise ValueError("Predictions must be binary")
+        indices = labels[valid].astype(np.int64) * 2 + selected.astype(np.int64)
+        self.confusion += np.bincount(indices, minlength=4).reshape(2, 2)
+
+    def compute(self):
+        tn, fp, fn, tp = self.confusion.ravel().astype(np.float64)
+        total = tn + fp + fn + tp
+        precision = tp / (tp + fp) if tp + fp else 0.0
+        recall = tp / (tp + fn) if tp + fn else 0.0
+        f1 = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.0
+        iou = tp / (tp + fp + fn) if tp + fp + fn else 0.0
+        oa = (tn + tp) / total if total else 0.0
+        expected = ((tn + fp) * (tn + fn) + (fn + tp) * (fp + tp)) / total**2 if total else 0.0
+        kappa = (oa - expected) / (1 - expected) if total and expected < 1 else 0.0
+        return {
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "iou": iou,
+            "oa": oa,
+            "kappa": kappa,
+        }
+
+
+DEFAULT_CONFIG = Path(__file__).resolve().parent / "configs" / "hybrid.yaml"
+
+
+def load_model_kwargs(config_path=DEFAULT_CONFIG):
+    data = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not isinstance(data.get("model"), dict):
+        raise ValueError("The config must contain a model mapping")
+    return data["model"]
+
+
+def build_model(config_path=DEFAULT_CONFIG, mobilenet_pretrained=None, vssm_pretrained=None):
+    from models.ChangeHybridBCD import ChangeHybridBCD
+
+    kwargs = load_model_kwargs(config_path)
+    return ChangeHybridBCD(
+        mobilenet_pretrained=mobilenet_pretrained,
+        vssm_pretrained=vssm_pretrained,
+        **kwargs,
+    )
+
+
+def lovasz_gradient(sorted_labels):
+    count = sorted_labels.numel()
+    positives = sorted_labels.sum()
+    intersection = positives - sorted_labels.cumsum(0)
+    union = positives + (1 - sorted_labels).cumsum(0)
+    jaccard = 1.0 - intersection / union
+    if count > 1:
+        jaccard[1:] = jaccard[1:] - jaccard[:-1].clone()
+    return jaccard
+
+
+def lovasz_softmax(probabilities, labels, ignore=255):
+    import torch
+
+    classes = probabilities.shape[1]
+    flattened = probabilities.permute(0, 2, 3, 1).reshape(-1, classes)
+    labels = labels.reshape(-1)
+    valid = labels != ignore
+    flattened = flattened[valid]
+    labels = labels[valid]
+    if labels.numel() == 0:
+        return probabilities.sum() * 0.0
+    losses = []
+    for class_index in range(classes):
+        foreground = (labels == class_index).float()
+        if foreground.sum() == 0:
+            continue
+        errors = (foreground - flattened[:, class_index]).abs()
+        errors_sorted, order = torch.sort(errors, descending=True)
+        losses.append(torch.dot(errors_sorted, lovasz_gradient(foreground[order])))
+    return torch.stack(losses).mean()
+
+
+def model_state(checkpoint):
+    state = checkpoint.get("model", checkpoint) if isinstance(checkpoint, dict) else checkpoint
+    if not isinstance(state, dict):
+        raise ValueError("Checkpoint must contain a model state dict")
+    return {
+        name: tensor for name, tensor in state.items()
+        if name.rsplit(".", 1)[-1] not in ("total_ops", "total_params")
+    }
 
 
 def build_parser():
@@ -41,8 +143,6 @@ def build_parser():
 def compute_loss(outputs, labels, pos_weight_seg, lovasz_weight):
     import torch
     import torch.nn.functional as F
-
-    from utils.lovasz import lovasz_softmax
 
     class_weights = labels.new_tensor([1.0, pos_weight_seg], dtype=torch.float32)
 
@@ -150,7 +250,6 @@ def main():
     from torch.utils.data import DataLoader
 
     from datasets.change_detection import ChangeDetectionDataset
-    from utils.model import build_model, load_model_kwargs
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for the selective scan kernel")
@@ -170,7 +269,7 @@ def main():
     model = build_model(args.config, args.mobilenet_pretrained, args.vssm_pretrained).to(device)
     if args.init_checkpoint:
         checkpoint = torch.load(args.init_checkpoint, map_location="cpu", weights_only=False)
-        state = checkpoint["model"] if isinstance(checkpoint, dict) and "model" in checkpoint else checkpoint
+        state = model_state(checkpoint)
         model.load_state_dict(state, strict=True)
     optimizer = make_optimizer(model, args.learning_rate, args.weight_decay)
     initial_lrs = [group["lr"] for group in optimizer.param_groups]
