@@ -45,7 +45,7 @@ class BinaryMetrics:
         }
 
 
-DEFAULT_CONFIG = Path(__file__).resolve().parent / "configs" / "hybrid.yaml"
+DEFAULT_CONFIG = Path(__file__).resolve().parent / "configs" / "lsmamba_cd.yaml"
 
 
 def load_model_kwargs(config_path=DEFAULT_CONFIG):
@@ -56,10 +56,10 @@ def load_model_kwargs(config_path=DEFAULT_CONFIG):
 
 
 def build_model(config_path=DEFAULT_CONFIG, mobilenet_pretrained=None, vssm_pretrained=None):
-    from models.ChangeHybridBCD import ChangeHybridBCD
+    from models.LSMamba_CD import LSMambaCD
 
     kwargs = load_model_kwargs(config_path)
-    return ChangeHybridBCD(
+    return LSMambaCD(
         mobilenet_pretrained=mobilenet_pretrained,
         vssm_pretrained=vssm_pretrained,
         **kwargs,
@@ -88,7 +88,7 @@ def default_checkpoint(dataset):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="Test HybridBCD")
+    parser = argparse.ArgumentParser(description="Test LSMamba-CD")
     parser.add_argument("--dataset", choices=("LEVIR-CD", "SYSU-CD", "WHU-CD"), default="LEVIR-CD")
     parser.add_argument("--test-dir", required=True)
     parser.add_argument("--test-list", required=True)

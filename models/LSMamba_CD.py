@@ -91,7 +91,7 @@ def get_boundary_label(mask, dilation=1):
         boundary = (F.conv2d(boundary, dilate_kernel, padding=dilation) > 0).float()
     return boundary
 
-class ChangeHybridBCD(nn.Module):
+class LSMambaCD(nn.Module):
 
     def __init__(self, mobilenet_pretrained=None, vssm_pretrained=None, msdf_out_ch=120, lfmwb_mid_ch=192, use_cross_gate=True, use_mask_guide=False, **kwargs):
         super().__init__()

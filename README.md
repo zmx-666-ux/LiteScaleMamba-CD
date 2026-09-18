@@ -1,4 +1,4 @@
-# LiteScaleMamba-CD
+# LSMamba-CD
 
 Anonymous implementation of binary remote sensing change detection on LEVIR-CD, SYSU-CD and WHU-CD.
 
@@ -7,10 +7,10 @@ Anonymous implementation of binary remote sensing change detection on LEVIR-CD, 
 ## Repository layout
 
 ```text
-models/             Hybrid_backbone.py, Hybrid_decoder.py, ChangeHybridBCD.py,
+models/             Hybrid_backbone.py, Hybrid_decoder.py, LSMamba_CD.py,
                     vmamba.py and csm_triton.py
 datasets/           Dataset loader and paired-image augmentation
-configs/hybrid.yaml Model settings
+configs/lsmamba_cd.yaml Model settings
 figures/            PDF figures and PNG previews
 weights/            Best dataset checkpoints (add the supplied .pth files)
 train.py            Training and validation
@@ -25,8 +25,8 @@ The two VMamba support files in `models/` and the selective-scan CUDA extension 
 Use Python 3.10 on Linux with an NVIDIA GPU and a CUDA toolkit of at least 11.6. The following example uses the CUDA 12.1 build of PyTorch 2.2.2; use the [matching PyTorch build](https://docs.pytorch.org/get-started/previous-versions/) for your CUDA environment.
 
 ```bash
-conda create -n litescalemamba python=3.10 -y
-conda activate litescalemamba
+conda create -n lsmamba python=3.10 -y
+conda activate lsmamba
 python -m pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cu121
 python -m pip install -r requirements.txt
 python -m pip install --no-build-isolation "selective_scan @ git+https://github.com/ChenHongruixuan/ChangeMamba.git@b834b2a69efd849c43dd99eaa8edc57efbcec1c4#subdirectory=kernels/selective_scan"
